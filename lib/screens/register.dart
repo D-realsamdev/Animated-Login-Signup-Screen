@@ -1,9 +1,11 @@
-// ignore_for_file: unused_field, prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, prefer_final_fields, non_constant_identifier_names, unused_element, avoid_print
+// ignore_for_file: unused_field, prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, prefer_final_fields, non_constant_identifier_names, unused_element, avoid_print, sized_box_for_whitespace
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:listing_app/screens/login.dart';
+import 'package:listing_app/services/global_method.dart';
 
 class RegisterScreen extends StatefulWidget {
   
@@ -14,18 +16,38 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin{
   late AnimationController _animationController;
   late Animation <double> _animation;
+  late TextEditingController _fullnameTextController = 
+  TextEditingController(text: " ");
+  late TextEditingController _usernameTextController = 
+  TextEditingController(text: " ");
   late TextEditingController _emailTextController = 
   TextEditingController(text: " ");
   late TextEditingController _passwordTextController = 
   TextEditingController(text: " ");
+  late TextEditingController _confirmpasswordTextController = 
+  TextEditingController(text: " ");
+
+  FocusNode _usernameFocusNode = FocusNode();
+  FocusNode _emailFocusNode = FocusNode();
+  FocusNode _passwordFocusNode = FocusNode();
+  FocusNode _confirmPasswordFocusNode = FocusNode();
   bool _obscureText = true;
   final _registerFormKey = GlobalKey<FormState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _animationController.dispose();
+    _fullnameTextController.dispose();
+    _usernameTextController.dispose();
     _emailTextController.dispose();
     _passwordTextController.dispose();
+    _confirmpasswordTextController.dispose();
+    _usernameFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
@@ -45,10 +67,30 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     super.initState();
   }
 
-  void _SubmitFormLogin(){
+  void _SubmitFormLogin() async{
     final isValid = _registerFormKey.currentState!.validate();
-    print(';isValid $isValid');
+    if(isValid){
+      setState(() {
+        _isLoading = true;
+      });
+     try{
+        await _auth.createUserWithEmailAndPassword(
+        email: _emailTextController.text.trim().toLowerCase(),
+        password: _passwordTextController.text.trim()  
+      );
+     }catch(errorrr){
+       setState(() {
+        _isLoading = false;
+      });
+      // showErrorDialog(errorrr.toString());
+       GlobalMethod.showErrorDialog(error: errorrr.toString(), context: context);
+     }
+    }
+    setState(() {
+        _isLoading = false;
+      });
   }
+
   @override
   Widget build(BuildContext context) {
     Size  size = MediaQuery.of(context).size;
@@ -105,8 +147,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     child: Column(
                       children: [
                         TextFormField(
-                    keyboardType: TextInputType.emailAddress,
-                    controller: _emailTextController,
+                    keyboardType: TextInputType.name,
+                    controller: _fullnameTextController,
                     validator: (value){
                       if(value!.isEmpty){
                         return "Please enter your Name";
@@ -137,11 +179,15 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     height: 20,
                   ),
                    TextFormField(
-                    keyboardType: TextInputType.emailAddress,
-                    controller: _emailTextController,
+                     textInputAction: TextInputAction.next,
+                     onEditingComplete: () =>
+                     FocusScope.of(context).requestFocus(_emailFocusNode),
+                     focusNode: _usernameFocusNode,
+                    keyboardType: TextInputType.name,
+                    controller: _usernameTextController,
                     validator: (value){
                       if(value!.isEmpty){
-                        return "Please enter your Username";
+                        return "Please enter your UserName";
                       }else{
                         return null;
                       }
@@ -169,14 +215,19 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     height: 20,
                   ),
                   TextFormField(
+                     textInputAction: TextInputAction.next,
+                     onEditingComplete: () =>
+                     FocusScope.of(context).requestFocus(_passwordFocusNode),
+                     focusNode: _emailFocusNode,
                     keyboardType: TextInputType.emailAddress,
                     controller: _emailTextController,
                     validator: (value){
                       if(value!.isEmpty){
                         return "Please enter your valid email address";
-                      }if(value.contains("@")){
-                        return "Please enter a valid email address";
                       }
+                      // }else if(value.contains("@")){
+                      //   return "Please enter a valid email address";
+                      // }
                       else{
                         return null;
                       }
@@ -204,6 +255,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     height: 20,
                   ),
                   TextFormField(
+                     textInputAction: TextInputAction.next,
+                     onEditingComplete: () =>
+                     FocusScope.of(context).requestFocus(_confirmPasswordFocusNode),
+                     focusNode: _passwordFocusNode,
                     obscureText: _obscureText,
                     keyboardType: TextInputType.visiblePassword,
                     controller: _passwordTextController,
@@ -250,9 +305,12 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                     height: 20,
                   ),
                   TextFormField(
+                     textInputAction: TextInputAction.done,
+                     onEditingComplete: () => _SubmitFormLogin,
+                     focusNode: _confirmPasswordFocusNode,
                     obscureText: _obscureText,
                     keyboardType: TextInputType.visiblePassword,
-                    controller: _passwordTextController,
+                    controller: _confirmpasswordTextController,
                     validator: (value){
                       if(value!.isEmpty || value.length < 6){
                         return "Please enter a password";
@@ -295,25 +353,17 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                       ],
                     )
                   ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.end,
-                  //   children: [
-                  //     TextButton(
-                  //       onPressed: () {}, 
-                  //       child: Text(
-                  //         "Forgot Password",
-                  //       style:TextStyle(
-                  //         color: Colors.red,
-                  //         fontSize: 15,
-                  //       ),  
-                  //       ), 
-                  //     ),
-                  //   ],
-                  // ), 
                   SizedBox(
                     height: 40,
                   ),
-                MaterialButton(
+                _isLoading?  Center(
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    color: Colors.grey ,
+                    child:  CircularProgressIndicator(),
+                  ),
+                ): MaterialButton(
                   color: Colors.redAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)

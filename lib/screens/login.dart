@@ -1,9 +1,11 @@
 // ignore_for_file: unused_field, prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, prefer_final_fields, non_constant_identifier_names, unused_element, avoid_print
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:listing_app/screens/register.dart';
+import 'package:listing_app/services/global_method.dart';
 
 class LoginScreen extends StatefulWidget {
   
@@ -18,14 +20,22 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   TextEditingController(text: " ");
   late TextEditingController _passwordTextController = 
   TextEditingController(text: " ");
+
+  FocusNode _emailFocusNode = FocusNode();
+  FocusNode _passwordFocusNode = FocusNode();
   bool _obscureText = true;
   final _loginFormKey = GlobalKey<FormState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
+
 
   @override
   void dispose() {
     _animationController.dispose();
     _emailTextController.dispose();
     _passwordTextController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -45,10 +55,56 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     super.initState();
   }
 
-  void _SubmitFormLogin(){
+  void _SubmitFormLogin() async {
     final isValid = _loginFormKey.currentState!.validate();
-    print(';isValid $isValid');
+    if(isValid){
+      setState(() {
+        _isLoading = true;
+      });
+     try{
+        await _auth.signInWithEmailAndPassword(
+        email: _emailTextController.text.trim().toLowerCase(),
+        password: _passwordTextController.text.trim()  
+      );
+     }catch(errorrr){
+       setState(() {
+        _isLoading = false;
+      });
+       GlobalMethod.showErrorDialog(error: errorrr.toString(), context: context);
+     }
+    }
+    setState(() {
+        _isLoading = false;
+      });
   }
+
+  Future<void> _showErrorDialog(error) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Error Occured'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: [
+              // Text('This is a demo alert dialog.'),
+              Text('$error',),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
   @override
   Widget build(BuildContext context) {
     Size  size = MediaQuery.of(context).size;
@@ -110,9 +166,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     validator: (value){
                       if(value!.isEmpty){
                         return "Please enter your valid email address";
-                      }if(value.contains("@")){
-                        return "Please enter a valid email address";
                       }
+                      // if(value.contains("@")){
+                      //   return "Please enter a valid email address";
+                      // }
                       else{
                         return null;
                       }
@@ -201,7 +258,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   SizedBox(
                     height: 20,
                   ),
-                MaterialButton(
+                _isLoading?  Center(
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    color: Colors.grey ,
+                    child:  CircularProgressIndicator(),
+                  ),
+                ):MaterialButton(
                   color: Colors.redAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)
