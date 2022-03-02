@@ -2,8 +2,8 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:listing_app/screens/login.dart';
 import 'package:listing_app/screens/register.dart';
 import 'package:listing_app/services/global_method.dart';
 
@@ -135,7 +135,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)
                     ),
-                  onPressed: _SubmitFormLogin,
+                  onPressed: (){
+                    Navigator.push(
+                    context, MaterialPageRoute(
+                    builder: (context) => LoginScreen()));
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                     child: Row(
@@ -170,7 +174,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> with TickerProviderStateM
                       shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(15))),
                     ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                    context, MaterialPageRoute(
+                    builder: (context) => RegisterScreen()));
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                     child: Row(

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:listing_app/constant.dart';
 import 'package:listing_app/screens/register.dart';
 import 'package:listing_app/services/global_method.dart';
 
@@ -64,8 +65,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
      try{
         await _auth.signInWithEmailAndPassword(
         email: _emailTextController.text.trim().toLowerCase(),
-        password: _passwordTextController.text.trim()  
-      );
+        password: _passwordTextController.text.trim());
+        Navigator.canPop(context) ? Navigator.pop(context) : null;
      }catch(errorrr){
        setState(() {
         _isLoading = false;
@@ -266,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     child:  CircularProgressIndicator(),
                   ),
                 ):MaterialButton(
-                  color: Colors.redAccent,
+                  color: pHeadColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15)
                     ),

@@ -78,6 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         email: _emailTextController.text.trim().toLowerCase(),
         password: _passwordTextController.text.trim()  
       );
+      Navigator.canPop(context) ? Navigator.pop(context) : null;
      }catch(errorrr){
        setState(() {
         _isLoading = false;
