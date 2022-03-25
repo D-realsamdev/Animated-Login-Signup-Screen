@@ -205,11 +205,6 @@ void _tripEditModalBottomSheet(context) {
         );
       });
 }
-
-
-
-
-
 class AccountTile extends StatelessWidget {
 
   @override

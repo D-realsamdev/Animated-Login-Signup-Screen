@@ -3,13 +3,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:listing_app/screens/edit_profile_screen.dart';
-import 'package:listing_app/screens/login.dart';
 import 'package:listing_app/screens/register.dart';
+import 'package:listing_app/screens/settings.dart';
 
 class UserState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    // final User?  user = _auth.currentUser;
+    // final String uid = user!.uid;
     return StreamBuilder(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (ctx,  userSnapShot){

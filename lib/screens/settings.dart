@@ -1,30 +1,52 @@
-// ignore_for_file: unused_field, prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, prefer_final_fields, non_constant_identifier_names, unused_element, avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace, avoid_types_as_parameter_names, deprecated_member_use, avoid_init_to_null, unnecessary_null_comparison, void_checks
-import 'dart:io';
+// ignore_for_file: unused_field, prefer_const_constructors, prefer_const_constructors_in_immutables, use_key_in_widget_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, prefer_final_fields, non_constant_identifier_names, unused_element, avoid_print, avoid_unnecessary_containers, sized_box_for_whitespace, avoid_types_as_parameter_names, deprecated_member_use, avoid_init_to_null, unnecessary_null_comparison, void_checks, must_call_super
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:listing_app/components/custom_account_setting_tile.dart';
-import 'package:listing_app/components/userinfo.dart';
 import 'package:listing_app/constant.dart';
 import 'package:listing_app/screens/edit_profile_screen.dart';
-import 'package:listing_app/screens/login.dart';
+import 'package:listing_app/user_state.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:sliding_sheet/sliding_sheet.dart';
 
 
 class SettingScreen extends StatefulWidget { 
+  final String userID;
+  const SettingScreen({required this.userID});
   @override
   _SettingScreenState createState() => _SettingScreenState();
 }
 
 class _SettingScreenState extends State<SettingScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+   @override
+  void initState(){
+    super.initState();
+    getUserData();
+  }
 
-   PickedFile? _imageFile;
-
-  final ImagePicker _picker = ImagePicker();
-
+  bool _isLoading = false;
+  String ? username;
+  String ? fullname;
+  String imageUrl = " ";
+  bool _isSameuser = false;
+  void getUserData() async{
+    _isLoading = true;
+    final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+    .collection('registration')
+    .doc(widget.userID )
+    .get();
+    if (userDoc == null) {
+      return;
+    }else {
+      setState(() {
+        username = userDoc.get('username');
+        // fullname = userDoc.get('fullname');
+      });
+      _isLoading = false;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     Size  size = MediaQuery.of(context).size;
@@ -39,7 +61,8 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
       backgroundColor: pHeadColor,
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+      ?Center(child: CircularProgressIndicator()): SingleChildScrollView(
         child: Container(
           child: Column(
             children: [
@@ -79,17 +102,18 @@ class _SettingScreenState extends State<SettingScreen> {
                                     color: Colors.white,
                                   ),
                                 ),
-                                w10Spacing,
+                                // w10Spacing,
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      "Hon Smart",
+                                     username == null ? 'name' : username!,
                                         style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 20,
                                       ),
                                     ),
-                                    SizedBox(width: size.width*0.4),
+                                    // SizedBox(width: size.width*0.4),
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: CircleAvatar(
@@ -280,113 +304,14 @@ class _SettingScreenState extends State<SettingScreen> {
             onPressed: () {
               _auth.signOut();
               Navigator.of(context).pushAndRemoveUntil(
-   MaterialPageRoute(
-     builder: (context) => LoginScreen()
-     ),(route) => false);
-            },
+              MaterialPageRoute(
+                builder: (context) => UserState()
+                ),(route) => false);
+             },
           ),
         ],
       );
     },
   );
-}
-
-
-Future  showSheet(context) => showSlidingBottomSheet(
-   context,
-  builder: (context) => SlidingSheetDialog(
-    cornerRadius: 16,
-    snapSpec: SnapSpec(
-      snappings: [0.7],
-    ),
-    builder: buildSheet,
-    headerBuilder: buildHeader,
-  ),
-);
-
-Widget buildSheet(context, state) =>Material(
-  child: Column(
-    children: [
-     Container(
-        //  height: MediaQuery.of(context).size.height * 0.95,
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            // mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
-                  "Add Profile Image",
-                  style: TextStyle(
-                   fontSize: 20 
-                  ),
-                  ),
-              ),
-              h18Spacing,
-              InkWell(
-                onTap: (){getFromCamera(ImageSource.camera);},
-                child: UploadDialogInfo(
-                  icon: Icons.photo_camera,
-                  userText: "Take a Photo"
-                ),
-              ),
-              h24Spacing,
-              InkWell(
-                onTap: (){getFromCamera(ImageSource.gallery);},
-                child: UploadDialogInfo(
-                  icon: Icons.photo_album_outlined,
-                  userText: "Upload from Photos"
-                ),
-              ),
-              h24Spacing
-              ],
-            ),
-            ),
-            ],
-          ),
-        );
-  
-        Widget buildHeader(BuildContext context, SheetState state) {
-          return Container(
-            child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: 50,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.black26,
-                      )
-                    ),
-                  ),
-                )
-            ]
-          ),
-          );
-        }
-
-
-// void _getFromGallery(ImageSource source) async {
-//     PickedFile? pickedFile = await ImagePicker().getImage(
-//     source: ImageSource.gallery
-//     maxHeight: 1080, 
-//     maxWidth: 1080,
-//     );
-// }
-
-
-void getFromCamera(ImageSource source) async {
-    final pickedFile = await _picker.getImage(
-      source: source,
-    );
-    setState(() {
-      _imageFile = pickedFile;
-    });
-    Navigator.pop(context);
 }
 }

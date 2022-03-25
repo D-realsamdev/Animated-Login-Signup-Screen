@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 const pHeadColor = Color(0xFFA020F0);
 const textColor1 = Color(0xFFFFFFFF);
+const textColor3 = Color(0xFFf5f5f5);
 const textColor2 = Color(0xFFFFFFFF);
 
 

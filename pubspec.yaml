@@ -40,6 +40,7 @@ dependencies:
   page_transition: ^2.0.5
   image_cropper: ^1.5.0
   cloud_firestore: ^3.1.10
+  firebase_storage: ^10.2.9
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +67,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/wal.png
+    - assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
